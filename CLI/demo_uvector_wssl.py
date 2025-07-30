@@ -123,17 +123,28 @@ def uvector_wssl(fn):
 
     model = MSA_DAT_Net(model1, model2)
     
-    #model.cuda()    
+    # Check for GPU availability and use GPU 2 specifically
+    if torch.cuda.is_available():
+        device = torch.device('cuda:2')  # Specifically use GPU 2
+        print(f"Using GPU 2: {torch.cuda.get_device_name(2)}")
+    else:
+        device = torch.device('cpu')
+        print("GPU not available, using CPU")
+
+    # Load model to GPU 2
     path = "./model/ZWSSL_20_50_e21.pth"  ## Load model
     #print(path)
-    model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
-       
+    model.load_state_dict(torch.load(path, map_location=device))
+    model = model.to(device)
+
+    # Move input tensors to GPU 2
     X1, X2 = lstm_data(fn)
-    
     X1 = np.swapaxes(X1,0,1)
     X2 = np.swapaxes(X2,0,1)
     x1 = Variable(X1, requires_grad=False)
     x2 = Variable(X2, requires_grad=False)
+    x1 = x1.to(device)
+    x2 = x2.to(device)
     o1,_,_,_ = model.forward(x1, x2)
     ### Get the prediction
     # output = np.argmax(o1.detach().cpu().numpy(), axis=1)
@@ -174,6 +185,8 @@ def classification_wssl_uvector(audio_paths):
         plt.ylabel("Language Identification Probability (in log scale)")
         plt.title("Language Identification Probability of Spoken Audio using WSSL uVector")
         plt.show()
+        # Return single language code for single file
+        return pred_labels[0]
     else:
         # Create a DataFrame
         df = pd.DataFrame({'filename': audio_paths, 'predicted_language': pred_labels})
@@ -182,6 +195,8 @@ def classification_wssl_uvector(audio_paths):
         # Save the DataFrame to a CSV file
         df.to_csv(csv_file_path, index=False)
         print('Data has been saved to {}'.format(csv_file_path))
+        # Return list of language codes for multiple files
+        return pred_labels
 
 
 def main():
@@ -207,8 +222,9 @@ def main():
     else:
         print("Error: {} is not a valid file/directory path.".format(path))
 
-    # Call the function for classification
-    classification_wssl_uvector(file_list)
+    # Call the function for classification and get the results
+    predicted_languages = classification_wssl_uvector(file_list)
+    return predicted_languages
 
 
 if __name__ == "__main__":
