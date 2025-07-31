@@ -132,7 +132,7 @@ def uvector_wssl(fn):
         print("GPU not available, using CPU")
 
     # Load model to GPU 2
-    path = "./model/ZWSSL_20_50_e21.pth"  ## Load model
+    path = os.path.join(os.path.dirname(__file__), "model/ZWSSL_20_50_e21.pth")  ## Load model
     #print(path)
     model.load_state_dict(torch.load(path, map_location=device))
     model = model.to(device)
@@ -157,6 +157,7 @@ def uvector_wssl(fn):
 # Function to perform audio feature extraction and language identification using WSSL uVector
 def classification_wssl_uvector(audio_paths):
     pred_labels = []
+    confidences = []
     for audio_path in audio_paths:
         bnf = extract_BNF(audio_path)
 
@@ -173,6 +174,7 @@ def classification_wssl_uvector(audio_paths):
         # Get the identified language
         Y1 = id2lang[lang]
         pred_labels.append(Y1)
+        confidences.append(prob_all_lang[lang])
         # Display pridected language information using a message box
         print("The predicted language of {} audio is {}".format(audio_path, Y1))
     
@@ -186,7 +188,7 @@ def classification_wssl_uvector(audio_paths):
         plt.title("Language Identification Probability of Spoken Audio using WSSL uVector")
         plt.show()
         # Return single language code for single file
-        return pred_labels[0]
+        return pred_labels[0], confidences[0]
     else:
         # Create a DataFrame
         df = pd.DataFrame({'filename': audio_paths, 'predicted_language': pred_labels})
@@ -196,7 +198,7 @@ def classification_wssl_uvector(audio_paths):
         df.to_csv(csv_file_path, index=False)
         print('Data has been saved to {}'.format(csv_file_path))
         # Return list of language codes for multiple files
-        return pred_labels
+        return pred_labels, confidences
 
 
 def main():
