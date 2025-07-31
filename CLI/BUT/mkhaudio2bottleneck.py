@@ -103,9 +103,14 @@ else:
     if len(signal)==0: logging.info("Could not read file %s, no features will be created", audio_input)
     else:
         fea=signal2fbank(signal)
-        try:
-            vad=utils.read_lab_to_bool_vec(vad_file,length=len(fea))
-        except:
+        if vad_file and os.path.isfile(vad_file):
+            try:
+                vad=utils.read_lab_to_bool_vec(vad_file,length=len(fea))
+            except:
+                logging.info("Could not read VAD file, energy-based VAD will be computed and used")
+                vad=utils.compute_vad(signal)
+                logging.info("%d frames of speech detected", sum(vad))
+        else:
             logging.info("Could not read VAD file, energy-based VAD will be computed and used")
             vad=utils.compute_vad(signal)
             logging.info("%d frames of speech detected", sum(vad))
@@ -137,6 +142,7 @@ else:
         df.to_csv(fea_output+'.csv',encoding='utf-16',index=False)
    
         logging.info('Features are successfully generated for file %s', audio_input )
+        
         
         
         

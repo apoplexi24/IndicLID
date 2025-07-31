@@ -92,7 +92,7 @@ def fbank_htk(x, window, noverlap, fbank_mx):
     x         - input signal
     window    - frame window lentgth (in samples, i.e. WINDOWSIZE/SOURCERATE)
     or vector of widow weights
-    noverlap  - overlapping between frames (in samples, i.e window-TARGETRATE/SOURCERATE)
+    noverlap  - overlapping between frames (in samples, i.e. window-TARGETRATE/SOURCERATE)
     fbank_mx  - array with (Mel) filter bank (as returned by function mel_fbank_mx()).
  """
 
