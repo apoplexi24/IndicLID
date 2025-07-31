@@ -16,7 +16,6 @@
 
 import numpy as np
 import scipy.linalg as spl
-import scipy as sp
 
 def uppertri_indices(dim, isdiag=False):
     """ [utr utc]=uppertri_indices(D, isdiag) returns row and column indices
@@ -155,7 +154,7 @@ def gmm_eval(data, GMM, return_accums=0):
     if return_accums == 0:
         return llh
         
-    gamma = sp.exp(gamma.T - llh)
+    gamma = np.exp(gamma.T - llh)
     N = gamma.sum(axis=1)
     F = gamma.dot(data)
 
@@ -168,8 +167,8 @@ def gmm_eval(data, GMM, return_accums=0):
 
 def logsumexp(x, axis=0):
     xmax = x.max(axis)
-    ex=sp.exp(x - np.expand_dims(xmax, axis))
-    x = xmax + sp.log(sp.sum(ex, axis))
+    ex=np.exp(x - np.expand_dims(xmax, axis))
+    x = xmax + np.log(np.sum(ex, axis))
     not_finite = ~np.isfinite(xmax)
     x[not_finite] = xmax[not_finite]
     return x
